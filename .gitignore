@@ -1,0 +1,17 @@
+node_modules/
+dist/
+*.local
+
+# Editor
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment / secrets — never commit real participant data
+.env
+.env.*
+data/
+*.csv
