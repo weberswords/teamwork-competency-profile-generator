@@ -2,6 +2,7 @@
   "name": "teamwork-competency-profile-generator",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "description": "Generates teamwork competency profiles for research participants. Runs entirely locally — no data leaves your machine.",
   "scripts": {
     "dev": "vite",
