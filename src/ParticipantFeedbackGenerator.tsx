@@ -321,7 +321,7 @@ const ParticipantFeedbackGenerator = () => {
         className="bg-gradient-to-br from-slate-50 to-blue-50 rounded-2xl shadow-2xl p-8 max-w-3xl mx-auto mb-8 print-card"
       >
         {/* Header */}
-        <div className="text-center mb-6">
+        <div className="text-center mb-6 print-mb print-section">
           <div className="inline-block bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-2 rounded-full text-sm font-semibold mb-4">
             Collaborative Problem Solving Study
           </div>
@@ -330,7 +330,7 @@ const ParticipantFeedbackGenerator = () => {
         </div>
 
         {/* Team Info Banner */}
-        <div className={`flex items-center justify-center gap-3 p-4 rounded-xl mb-6 ${
+        <div className={`flex items-center justify-center gap-3 p-4 rounded-xl mb-6 print-mb print-p-sm print-section ${
           td.isHighAgreement
             ? 'bg-gradient-to-r from-emerald-100 to-teal-100 border border-emerald-200'
             : 'bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200'
@@ -352,10 +352,11 @@ const ParticipantFeedbackGenerator = () => {
         </div>
 
         {/* Radar Chart */}
-        <div className="bg-white rounded-xl p-6 mb-6 shadow-lg">
+        <div className="bg-white rounded-xl p-6 mb-6 print-mb print-p shadow-lg print-section">
           <h2 className="text-xl font-bold text-gray-800 mb-2 text-center">Your Teamwork Competency Profile</h2>
           <p className="text-sm text-gray-500 text-center mb-4">Your responses compared to your team's average (Scale: 1–4)</p>
-          <ResponsiveContainer width="100%" height={320}>
+          <div className="print-chart-container" style={{ width: '100%', height: 320 }}>
+          <ResponsiveContainer width="100%" height="100%">
             <RadarChart data={radarData} margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
               <PolarGrid stroke="#e2e8f0" />
               <PolarAngleAxis
@@ -387,10 +388,11 @@ const ParticipantFeedbackGenerator = () => {
               <Legend wrapperStyle={{ paddingTop: '20px' }} />
             </RadarChart>
           </ResponsiveContainer>
+          </div>
         </div>
 
         {/* Factor-Level Summaries */}
-        <div className="grid grid-cols-2 gap-4 mb-6">
+        <div className="grid grid-cols-2 gap-4 mb-6 print-mb print-section">
           <div className="bg-white rounded-xl p-5 shadow-lg">
             <div className="flex items-center gap-2 mb-3">
               <span className="px-2 py-1 rounded text-xs font-bold bg-blue-100 text-blue-700">Interpersonal</span>
@@ -424,7 +426,7 @@ const ParticipantFeedbackGenerator = () => {
         </div>
 
         {/* Satisfaction Score */}
-        <div className="bg-white rounded-xl p-6 mb-6 shadow-lg">
+        <div className="bg-white rounded-xl p-6 mb-6 print-mb print-p shadow-lg print-section">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Heart className="text-rose-500" size={24} />
@@ -447,14 +449,14 @@ const ParticipantFeedbackGenerator = () => {
         </div>
 
         {/* Competency Descriptions */}
-        <div className="bg-white rounded-xl p-6 shadow-lg">
-          <div className="flex items-center gap-2 mb-4">
+        <div className="bg-white rounded-xl p-6 print-p shadow-lg">
+          <div className="flex items-center gap-2 mb-4 print-mb">
             <Info className="text-indigo-600" size={20} />
             <h3 className="font-bold text-gray-800">Understanding Your Competencies</h3>
           </div>
           <div className="space-y-4">
             {Object.entries(competencyDescriptions).map(([key, comp]) => (
-              <div key={key} className="border border-gray-100 rounded-lg p-4 bg-gray-50">
+              <div key={key} className="border border-gray-100 rounded-lg p-4 bg-gray-50 print-competency-item">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-3">
                     <span className={`px-2 py-1 rounded text-xs font-bold ${
@@ -479,7 +481,7 @@ const ParticipantFeedbackGenerator = () => {
         </div>
 
         {/* Contact & Disclaimer */}
-        <div className="mt-8 border-t border-gray-200 pt-6 text-sm text-gray-500 space-y-3">
+        <div className="mt-8 border-t border-gray-200 pt-6 text-sm text-gray-500 space-y-3 print-section print-disclaimer">
           {(config.researcherName || config.piName) && (
             <div>
               <p className="font-semibold text-gray-700 mb-1">Contact Information</p>
@@ -575,6 +577,7 @@ const ParticipantFeedbackGenerator = () => {
           .print-card {
             box-shadow: none !important;
             margin: 0 !important;
+            padding: 16px 24px !important;
             max-width: 100% !important;
             page-break-after: always;
             -webkit-print-color-adjust: exact !important;
@@ -583,6 +586,25 @@ const ParticipantFeedbackGenerator = () => {
           .print-card:last-child {
             page-break-after: auto;
           }
+          /* Prevent sections from being split across pages */
+          .print-section {
+            break-inside: avoid;
+            page-break-inside: avoid;
+          }
+          /* Competency descriptions: allow the container to break
+             but keep each individual item together */
+          .print-competency-item {
+            break-inside: avoid;
+            page-break-inside: avoid;
+          }
+          /* Tighter spacing in print */
+          .print-card .print-mb { margin-bottom: 12px !important; }
+          .print-card .print-p { padding: 12px !important; }
+          .print-card .print-p-sm { padding: 8px 12px !important; }
+          /* Smaller radar chart in print */
+          .print-chart-container { height: 240px !important; }
+          /* Smaller text for disclaimer */
+          .print-disclaimer { font-size: 0.7rem !important; }
         }
       `}</style>
 
@@ -617,10 +639,9 @@ const ParticipantFeedbackGenerator = () => {
 
             <div className="p-6 bg-gray-50 rounded-lg text-left max-w-lg mx-auto">
               <p className="font-semibold mb-3 text-gray-700">Expected CSV columns:</p>
-              <code className="text-xs text-gray-600 block whitespace-pre-wrap leading-relaxed">
-name,team,conflict_resolution,collaborative_problem_solving,communication,goal_setting,planning_coordination,satisfaction
-
-Alice,Team A,3.2,2.8,3.5,3.1,2.9,4.5
+              <code className="text-xs text-gray-600 block whitespace-pre-wrap break-all leading-relaxed">
+name,team,conflict_resolution,collaborative_problem_solving,communication,goal_setting,planning_coordination,satisfaction{'\n'}
+Alice,Team A,3.2,2.8,3.5,3.1,2.9,4.5{'\n'}
 Bob,Team A,2.9,3.1,3.0,3.4,3.2,3.8</code>
             </div>
           </div>
