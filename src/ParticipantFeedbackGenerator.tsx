@@ -448,11 +448,8 @@ const ParticipantFeedbackGenerator = () => {
           </div>
         </div>
 
-        {/* Page break before competency descriptions in print */}
-        <div className="print-page-break" />
-
-        {/* Competency Descriptions */}
-        <div className="bg-white rounded-xl p-6 print-p shadow-lg">
+        {/* Competency Descriptions — starts on page 2 in print */}
+        <div className="bg-white rounded-xl p-6 print-p shadow-lg print-page2-start">
           <div className="flex items-center gap-2 mb-4 print-mb">
             <Info className="text-indigo-600" size={20} />
             <h3 className="font-bold text-gray-800">Understanding Your Competencies</h3>
@@ -585,14 +582,10 @@ const ParticipantFeedbackGenerator = () => {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
-          /* Explicit page break between page 1 and page 2 of each profile */
-          .print-page-break {
-            display: block;
-            break-before: page;
-            page-break-before: always;
-            height: 0;
-            margin: 0;
-            padding: 0;
+          /* Force page 2 to start at the competency descriptions section */
+          .print-page2-start {
+            break-before: page !important;
+            page-break-before: always !important;
           }
           /* After the last card (disclaimer), force a break for batch mode */
           .print-card .print-disclaimer {
@@ -623,10 +616,6 @@ const ParticipantFeedbackGenerator = () => {
           .print-chart-container { height: 280px !important; }
           /* Smaller text for disclaimer */
           .print-disclaimer { font-size: 0.7rem !important; }
-          /* Hide page break element on screen */
-        }
-        .print-page-break {
-          display: none;
         }
       `}</style>
 
