@@ -163,6 +163,7 @@ const ParticipantFeedbackGenerator = () => {
   const [config, setConfig] = useState<ResearcherConfig>(DEFAULT_CONFIG);
   const [showSettings, setShowSettings] = useState(false);
   const [batchPrintMode, setBatchPrintMode] = useState(false);
+  const [usingSampleData, setUsingSampleData] = useState(false);
   const batchPrintRef = useRef(false);
 
   // Trigger print once batch cards are rendered
@@ -281,6 +282,7 @@ const ParticipantFeedbackGenerator = () => {
   const loadSampleData = () => {
     setData(SAMPLE_DATA);
     calculateTeamStats(SAMPLE_DATA);
+    setUsingSampleData(true);
   };
 
   const resetData = () => {
@@ -288,6 +290,7 @@ const ParticipantFeedbackGenerator = () => {
     setSelectedParticipant(null);
     setTeamStats({});
     setBatchPrintMode(false);
+    setUsingSampleData(false);
   };
 
   // -----------------------------------------------------------------------
@@ -318,178 +321,186 @@ const ParticipantFeedbackGenerator = () => {
     return (
       <div
         id={`card-${participant.id}`}
-        className="bg-gradient-to-br from-slate-50 to-blue-50 rounded-2xl shadow-2xl p-8 max-w-3xl mx-auto mb-8 print-card"
+        className="bg-white max-w-3xl mx-auto mb-8 print-card"
       >
+        {/* ============ PAGE 1 ============ */}
+
+        {/* Accent bar */}
+        <div className="h-1.5 bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-500 rounded-t-sm" />
+
         {/* Header */}
-        <div className="text-center mb-6 print-mb print-section">
-          <div className="inline-block bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-2 rounded-full text-sm font-semibold mb-4">
+        <div className="text-center pt-8 pb-2 print-section">
+          <p className="text-xs font-semibold tracking-widest uppercase text-indigo-500 mb-3">
             Collaborative Problem Solving Study
-          </div>
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">{name}</h1>
-          <p className="text-gray-600">Thank you for your valuable contribution to our research!</p>
+          </p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-1">{name}</h1>
+          <p className="text-sm text-gray-500">Thank you for your valuable contribution to our research!</p>
         </div>
 
         {/* Team Info Banner */}
-        <div className={`flex items-center justify-center gap-3 p-4 rounded-xl mb-6 print-mb print-p-sm print-section ${
-          td.isHighAgreement
-            ? 'bg-gradient-to-r from-emerald-100 to-teal-100 border border-emerald-200'
-            : 'bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200'
-        }`}>
-          <Users className={td.isHighAgreement ? 'text-emerald-600' : 'text-amber-600'} size={24} />
-          <span className="font-semibold text-gray-800">Team: {team}</span>
-          <span className="mx-2 text-gray-400">|</span>
-          {td.isHighAgreement ? (
-            <span className="flex items-center gap-1 text-emerald-700">
-              <CheckCircle size={18} />
-              High Agreement Team
-            </span>
-          ) : (
-            <span className="flex items-center gap-1 text-amber-700">
-              <Shuffle size={18} />
-              Diverse Competency Team
-            </span>
-          )}
+        <div className="flex items-center justify-center gap-3 py-3 mt-4 print-section">
+          <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium ${
+            td.isHighAgreement
+              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+              : 'bg-amber-50 text-amber-700 border border-amber-200'
+          }`}>
+            <Users size={16} />
+            <span>{team}</span>
+            <span className="text-gray-300 mx-1">|</span>
+            {td.isHighAgreement ? (
+              <span className="flex items-center gap-1">
+                <CheckCircle size={14} />
+                High Agreement
+              </span>
+            ) : (
+              <span className="flex items-center gap-1">
+                <Shuffle size={14} />
+                Diverse Competency
+              </span>
+            )}
+          </div>
         </div>
 
+        {/* Divider */}
+        <div className="border-t border-gray-100 mx-8 mt-4" />
+
         {/* Radar Chart */}
-        <div className="bg-white rounded-xl p-6 mb-6 print-mb print-p shadow-lg print-section">
-          <h2 className="text-xl font-bold text-gray-800 mb-2 text-center">Your Teamwork Competency Profile</h2>
-          <p className="text-sm text-gray-500 text-center mb-4">Your responses compared to your team's average (Scale: 1–4)</p>
-          <div className="print-chart-container" style={{ width: '100%', height: 320 }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <RadarChart data={radarData} margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
-              <PolarGrid stroke="#e2e8f0" />
-              <PolarAngleAxis
-                dataKey="competency"
-                tick={{ fill: '#475569', fontSize: 12, fontWeight: 600 }}
-              />
-              <PolarRadiusAxis
-                angle={90}
-                domain={[0, 4]}
-                tick={{ fill: '#94a3b8', fontSize: 10 }}
-                tickCount={5}
-              />
-              <Radar
-                name="Team Average"
-                dataKey="Team Average"
-                stroke="#94a3b8"
-                fill="#cbd5e1"
-                fillOpacity={0.4}
-                strokeWidth={2}
-              />
-              <Radar
-                name="You"
-                dataKey="You"
-                stroke="#4f46e5"
-                fill="#818cf8"
-                fillOpacity={0.5}
-                strokeWidth={2}
-              />
-              <Legend wrapperStyle={{ paddingTop: '20px' }} />
-            </RadarChart>
-          </ResponsiveContainer>
+        <div className="px-8 pt-6 pb-2 print-section">
+          <h2 className="text-lg font-bold text-gray-800 mb-1 text-center">Your Teamwork Competency Profile</h2>
+          <p className="text-xs text-gray-400 text-center mb-2">Your responses compared to your team's average (Scale: 1–4)</p>
+          <div className="print-chart-container" style={{ width: '100%', height: 300 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <RadarChart data={radarData} margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
+                <PolarGrid stroke="#e2e8f0" />
+                <PolarAngleAxis
+                  dataKey="competency"
+                  tick={{ fill: '#475569', fontSize: 12, fontWeight: 600 }}
+                />
+                <PolarRadiusAxis
+                  angle={90}
+                  domain={[0, 4]}
+                  tick={{ fill: '#94a3b8', fontSize: 10 }}
+                  tickCount={5}
+                />
+                <Radar
+                  name="Team Average"
+                  dataKey="Team Average"
+                  stroke="#94a3b8"
+                  fill="#cbd5e1"
+                  fillOpacity={0.3}
+                  strokeWidth={2}
+                />
+                <Radar
+                  name="You"
+                  dataKey="You"
+                  stroke="#4f46e5"
+                  fill="#818cf8"
+                  fillOpacity={0.4}
+                  strokeWidth={2}
+                />
+                <Legend wrapperStyle={{ paddingTop: '10px' }} />
+              </RadarChart>
+            </ResponsiveContainer>
           </div>
         </div>
 
         {/* Factor-Level Summaries */}
-        <div className="grid grid-cols-2 gap-4 mb-6 print-mb print-section">
-          <div className="bg-white rounded-xl p-5 shadow-lg">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="px-2 py-1 rounded text-xs font-bold bg-blue-100 text-blue-700">Interpersonal</span>
+        <div className="grid grid-cols-2 gap-6 px-8 py-4 print-section">
+          <div className="border border-gray-100 rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="px-2 py-0.5 rounded text-xs font-bold bg-blue-50 text-blue-600 border border-blue-100">Interpersonal</span>
             </div>
-            <p className="text-xs text-gray-500 mb-1">CR + CPS + COM</p>
+            <p className="text-xs text-gray-400 mb-1">CR + CPS + COM</p>
             <div className="flex items-baseline gap-3">
-              <div>
-                <span className="text-2xl font-bold text-indigo-600">{interpersonal.toFixed(2)}</span>
-                <span className="text-gray-400 text-sm"> / 4</span>
-              </div>
-              <div className="text-sm text-gray-500">
-                Team: <strong className="text-gray-700">{(td.interpersonalAvg || 0).toFixed(2)}</strong>
-              </div>
+              <span className="text-2xl font-bold text-gray-900">{interpersonal.toFixed(2)}</span>
+              <span className="text-gray-300 text-sm">/ 4</span>
+              <span className="text-sm text-gray-400 ml-auto">
+                Team: <strong className="text-gray-600">{(td.interpersonalAvg || 0).toFixed(2)}</strong>
+              </span>
             </div>
           </div>
-          <div className="bg-white rounded-xl p-5 shadow-lg">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="px-2 py-1 rounded text-xs font-bold bg-purple-100 text-purple-700">Self-Management</span>
+          <div className="border border-gray-100 rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="px-2 py-0.5 rounded text-xs font-bold bg-purple-50 text-purple-600 border border-purple-100">Self-Management</span>
             </div>
-            <p className="text-xs text-gray-500 mb-1">GSPM + PTC</p>
+            <p className="text-xs text-gray-400 mb-1">GSPM + PTC</p>
             <div className="flex items-baseline gap-3">
-              <div>
-                <span className="text-2xl font-bold text-indigo-600">{selfMgmt.toFixed(2)}</span>
-                <span className="text-gray-400 text-sm"> / 4</span>
-              </div>
-              <div className="text-sm text-gray-500">
-                Team: <strong className="text-gray-700">{(td.selfManagementAvg || 0).toFixed(2)}</strong>
-              </div>
+              <span className="text-2xl font-bold text-gray-900">{selfMgmt.toFixed(2)}</span>
+              <span className="text-gray-300 text-sm">/ 4</span>
+              <span className="text-sm text-gray-400 ml-auto">
+                Team: <strong className="text-gray-600">{(td.selfManagementAvg || 0).toFixed(2)}</strong>
+              </span>
             </div>
           </div>
         </div>
 
         {/* Satisfaction Score */}
-        <div className="bg-white rounded-xl p-6 mb-6 print-mb print-p shadow-lg print-section">
+        <div className="mx-8 mt-2 mb-6 border border-gray-100 rounded-lg p-5 print-section">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Heart className="text-rose-500" size={24} />
+              <Heart className="text-rose-400" size={20} />
               <div>
-                <h3 className="font-bold text-gray-800">Your Satisfaction with Team Collaboration</h3>
-                <p className="text-sm text-gray-500">How you rated your experience working with your team</p>
+                <h3 className="font-semibold text-gray-800 text-sm">Satisfaction with Team Collaboration</h3>
+                <p className="text-xs text-gray-400">How you rated your experience working with your team</p>
               </div>
             </div>
             <div className="text-right">
-              <span className="text-4xl font-bold text-rose-500">{satisfaction.toFixed(1)}</span>
-              <span className="text-gray-400 text-lg"> / 5</span>
+              <span className="text-3xl font-bold text-rose-500">{satisfaction.toFixed(1)}</span>
+              <span className="text-gray-300 text-base"> / 5</span>
             </div>
           </div>
-          <div className="mt-4 bg-gray-100 rounded-full h-3 overflow-hidden">
+          <div className="mt-3 bg-gray-100 rounded-full h-2 overflow-hidden">
             <div
-              className="bg-gradient-to-r from-rose-400 to-rose-500 h-full rounded-full transition-all"
+              className="bg-gradient-to-r from-rose-400 to-rose-500 h-full rounded-full"
               style={{ width: `${(satisfaction / 5) * 100}%` }}
             />
           </div>
         </div>
 
+        {/* ============ PAGE 2 ============ */}
+
         {/* Competency Descriptions — starts on page 2 in print */}
-        <div className="bg-white rounded-xl p-6 print-p shadow-lg print-page2-start">
-          <div className="flex items-center gap-2 mb-4 print-mb">
-            <Info className="text-indigo-600" size={20} />
+        <div className="px-8 pt-6 print-page2-start">
+          <div className="flex items-center gap-2 mb-5">
+            <Info className="text-indigo-500" size={18} />
             <h3 className="font-bold text-gray-800">Understanding Your Competencies</h3>
           </div>
-          <div className="space-y-4">
+          <div className="space-y-3">
             {Object.entries(competencyDescriptions).map(([key, comp]) => (
-              <div key={key} className="border border-gray-100 rounded-lg p-4 bg-gray-50 print-competency-item">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-3">
-                    <span className={`px-2 py-1 rounded text-xs font-bold ${
+              <div key={key} className="border border-gray-100 rounded-lg p-4 print-competency-item">
+                <div className="flex items-center justify-between mb-1.5">
+                  <div className="flex items-center gap-2">
+                    <span className={`px-2 py-0.5 rounded text-xs font-bold ${
                       comp.factor === 'Interpersonal'
-                        ? 'bg-blue-100 text-blue-700'
-                        : 'bg-purple-100 text-purple-700'
+                        ? 'bg-blue-50 text-blue-600 border border-blue-100'
+                        : 'bg-purple-50 text-purple-600 border border-purple-100'
                     }`}>
                       {comp.short}
                     </span>
-                    <span className="font-semibold text-gray-800">{comp.name}</span>
+                    <span className="font-semibold text-gray-800 text-sm">{comp.name}</span>
                   </div>
-                  <div className="flex items-center gap-4 text-sm">
-                    <span className="text-gray-500">You: <strong className="text-indigo-600">{(Number(participant[key]) || 0).toFixed(1)}</strong></span>
-                    <span className="text-gray-300">|</span>
-                    <span className="text-gray-500">Team: <strong className="text-gray-600">{(td.averages[key] || 0).toFixed(1)}</strong></span>
+                  <div className="flex items-center gap-3 text-sm">
+                    <span className="text-gray-400">You: <strong className="text-gray-800">{(Number(participant[key]) || 0).toFixed(1)}</strong></span>
+                    <span className="text-gray-200">|</span>
+                    <span className="text-gray-400">Team: <strong className="text-gray-600">{(td.averages[key] || 0).toFixed(1)}</strong></span>
                   </div>
                 </div>
-                <p className="text-sm text-gray-600 leading-relaxed">{comp.description}</p>
+                <p className="text-sm text-gray-500 leading-relaxed">{comp.description}</p>
               </div>
             ))}
           </div>
         </div>
 
         {/* Contact & Disclaimer */}
-        <div className="mt-8 border-t border-gray-200 pt-6 text-sm text-gray-500 space-y-3 print-section print-disclaimer">
+        <div className="mx-8 mt-8 pt-5 border-t border-gray-100 text-xs text-gray-400 space-y-2 pb-8 print-section print-disclaimer">
           {(config.researcherName || config.piName) && (
-            <div>
-              <p className="font-semibold text-gray-700 mb-1">Contact Information</p>
+            <div className="mb-2">
+              <p className="font-semibold text-gray-600 mb-1">Contact Information</p>
               {config.researcherName && (
-                <p>Researcher: {config.researcherName}{config.researcherEmail ? ` \u2014 ${config.researcherEmail}` : ''}</p>
+                <p>Researcher: {config.researcherName}{config.researcherEmail ? ` — ${config.researcherEmail}` : ''}</p>
               )}
               {config.piName && (
-                <p>Principal Investigator: {config.piName}{config.piEmail ? ` \u2014 ${config.piEmail}` : ''}</p>
+                <p>Principal Investigator: {config.piName}{config.piEmail ? ` — ${config.piEmail}` : ''}</p>
               )}
             </div>
           )}
@@ -565,19 +576,21 @@ const ParticipantFeedbackGenerator = () => {
   // -----------------------------------------------------------------------
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-100 to-gray-200 p-8">
+    <div className="min-h-screen bg-gray-50 p-8">
       <style>{`
         @media print {
           body, html {
             background: white !important;
+            margin: 0 !important;
+            padding: 0 !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
           .print-hide { display: none !important; }
           .print-card {
-            box-shadow: none !important;
+            background: white !important;
             margin: 0 !important;
-            padding: 16px 24px !important;
+            padding: 0 !important;
             max-width: 100% !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
@@ -586,13 +599,13 @@ const ParticipantFeedbackGenerator = () => {
           .print-page2-start {
             break-before: page !important;
             page-break-before: always !important;
+            padding-top: 32px !important;
           }
-          /* After the last card (disclaimer), force a break for batch mode */
+          /* After each profile (disclaimer), force a break for batch mode */
           .print-card .print-disclaimer {
             page-break-after: always;
             break-after: page;
           }
-          /* Don't break after the very last card's disclaimer */
           .print-card:last-child .print-disclaimer {
             page-break-after: auto;
             break-after: auto;
@@ -602,20 +615,12 @@ const ParticipantFeedbackGenerator = () => {
             break-inside: avoid;
             page-break-inside: avoid;
           }
-          /* Competency descriptions: allow the container to break
-             but keep each individual item together */
           .print-competency-item {
             break-inside: avoid;
             page-break-inside: avoid;
           }
-          /* Tighter spacing in print */
-          .print-card .print-mb { margin-bottom: 12px !important; }
-          .print-card .print-p { padding: 12px !important; }
-          .print-card .print-p-sm { padding: 8px 12px !important; }
-          /* Radar chart sized to fill page 1 nicely */
+          /* Radar chart sized for page 1 */
           .print-chart-container { height: 280px !important; }
-          /* Smaller text for disclaimer */
-          .print-disclaimer { font-size: 0.7rem !important; }
         }
       `}</style>
 
@@ -660,6 +665,17 @@ Bob,Team A,2.9,3.1,3.0,3.4,3.2,3.8</code>
           <>
             {/* ---- Settings ---- */}
             <SettingsPanel />
+
+            {/* ---- Sample Data Notice ---- */}
+            {usingSampleData && (
+              <div className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-4 mb-8 print-hide">
+                <p className="text-sm text-amber-800 font-medium mb-1">Sample Data Preview</p>
+                <p className="text-sm text-amber-700">
+                  This demo shows a subset of the profile content. The actual participant profiles include additional
+                  information that has been omitted here to avoid compromising research study procedures.
+                </p>
+              </div>
+            )}
 
             {/* ---- Participant List ---- */}
             <div className="bg-white rounded-2xl shadow-xl p-6 mb-8 print-hide">
