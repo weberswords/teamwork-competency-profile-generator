@@ -163,6 +163,7 @@ const ParticipantFeedbackGenerator = () => {
   const [config, setConfig] = useState<ResearcherConfig>(DEFAULT_CONFIG);
   const [showSettings, setShowSettings] = useState(false);
   const [batchPrintMode, setBatchPrintMode] = useState(false);
+  const [usingSampleData, setUsingSampleData] = useState(false);
   const batchPrintRef = useRef(false);
 
   // Trigger print once batch cards are rendered
@@ -281,6 +282,7 @@ const ParticipantFeedbackGenerator = () => {
   const loadSampleData = () => {
     setData(SAMPLE_DATA);
     calculateTeamStats(SAMPLE_DATA);
+    setUsingSampleData(true);
   };
 
   const resetData = () => {
@@ -288,6 +290,7 @@ const ParticipantFeedbackGenerator = () => {
     setSelectedParticipant(null);
     setTeamStats({});
     setBatchPrintMode(false);
+    setUsingSampleData(false);
   };
 
   // -----------------------------------------------------------------------
@@ -662,6 +665,17 @@ Bob,Team A,2.9,3.1,3.0,3.4,3.2,3.8</code>
           <>
             {/* ---- Settings ---- */}
             <SettingsPanel />
+
+            {/* ---- Sample Data Notice ---- */}
+            {usingSampleData && (
+              <div className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-4 mb-8 print-hide">
+                <p className="text-sm text-amber-800 font-medium mb-1">Sample Data Preview</p>
+                <p className="text-sm text-amber-700">
+                  This demo shows a subset of the profile content. The actual participant profiles include additional
+                  information that has been omitted here to avoid compromising research study procedures.
+                </p>
+              </div>
+            )}
 
             {/* ---- Participant List ---- */}
             <div className="bg-white rounded-2xl shadow-xl p-6 mb-8 print-hide">
