@@ -448,6 +448,9 @@ const ParticipantFeedbackGenerator = () => {
           </div>
         </div>
 
+        {/* Page break before competency descriptions in print */}
+        <div className="print-page-break" />
+
         {/* Competency Descriptions */}
         <div className="bg-white rounded-xl p-6 print-p shadow-lg">
           <div className="flex items-center gap-2 mb-4 print-mb">
@@ -579,12 +582,27 @@ const ParticipantFeedbackGenerator = () => {
             margin: 0 !important;
             padding: 16px 24px !important;
             max-width: 100% !important;
-            page-break-after: always;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
-          .print-card:last-child {
+          /* Explicit page break between page 1 and page 2 of each profile */
+          .print-page-break {
+            display: block;
+            break-before: page;
+            page-break-before: always;
+            height: 0;
+            margin: 0;
+            padding: 0;
+          }
+          /* After the last card (disclaimer), force a break for batch mode */
+          .print-card .print-disclaimer {
+            page-break-after: always;
+            break-after: page;
+          }
+          /* Don't break after the very last card's disclaimer */
+          .print-card:last-child .print-disclaimer {
             page-break-after: auto;
+            break-after: auto;
           }
           /* Prevent sections from being split across pages */
           .print-section {
@@ -601,10 +619,14 @@ const ParticipantFeedbackGenerator = () => {
           .print-card .print-mb { margin-bottom: 12px !important; }
           .print-card .print-p { padding: 12px !important; }
           .print-card .print-p-sm { padding: 8px 12px !important; }
-          /* Smaller radar chart in print */
-          .print-chart-container { height: 240px !important; }
+          /* Radar chart sized to fill page 1 nicely */
+          .print-chart-container { height: 280px !important; }
           /* Smaller text for disclaimer */
           .print-disclaimer { font-size: 0.7rem !important; }
+          /* Hide page break element on screen */
+        }
+        .print-page-break {
+          display: none;
         }
       `}</style>
 
