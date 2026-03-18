@@ -441,7 +441,7 @@ const ParticipantFeedbackGenerator = () => {
         </div>
 
         {/* Team Info Banner */}
-        <div className="flex items-center justify-center gap-3 py-3 mt-4 print-section">
+        <div className="flex flex-col items-center py-3 mt-4 print-section">
           <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium ${
             td.isHighAgreement
               ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
