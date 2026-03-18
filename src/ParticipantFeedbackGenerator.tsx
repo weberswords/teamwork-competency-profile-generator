@@ -104,6 +104,41 @@ const COMPETENCY_KEYS = [
 const INTERPERSONAL_KEYS = ['conflict_resolution', 'collaborative_problem_solving', 'communication'] as const;
 const SELF_MGMT_KEYS = ['goal_setting', 'planning_coordination'] as const;
 
+// ---------------------------------------------------------------------------
+// Raw survey item → subscale mapping
+// ---------------------------------------------------------------------------
+
+const SUBSCALE_ITEMS: Record<string, string[]> = {
+  conflict_resolution: ['CR1', 'CR7', 'CR10', 'CR15', 'CR16', 'CR18', 'CR19', 'CR21'],
+  collaborative_problem_solving: ['CPS3', 'CPS11', 'CPS14', 'CPS24', 'CPS25', 'CPS26'],
+  communication: ['COM2', 'COM5', 'COM8', 'COM9', 'COM12', 'COM17', 'COM27', 'COM28', 'COM29', 'COM30'],
+  goal_setting: ['GSPM6', 'GSPM20', 'GSPM22', 'GSPM31', 'GSPM32', 'GSPM35', 'GSPM36'],
+  planning_coordination: ['PTC4', 'PTC13', 'PTC23', 'PTC33', 'PTC34'],
+  satisfaction: ['Satisfaction_1', 'Satisfaction_2', 'Satisfaction_3', 'Satisfaction_4', 'Satisfaction_5'],
+};
+
+/** Items that require reverse scoring (5 - raw) */
+const REVERSE_SCORED_ITEMS = new Set(['CPS11', 'CPS25', 'CPS26', 'Satisfaction_3']);
+
+/** Map text responses to numeric scores (case-insensitive, trimmed) */
+function textToScore(text: string): number | null {
+  const t = text.trim().toLowerCase();
+  switch (t) {
+    case 'completely disagree':
+    case 'strongly disagree':
+      return 1;
+    case 'disagree':
+      return 2;
+    case 'agree':
+      return 3;
+    case 'completely agree':
+    case 'strongly agree':
+      return 4;
+    default:
+      return null;
+  }
+}
+
 const DISCLAIMER_TEXT =
   'This profile is provided as part of a research study conducted through the University of Nevada, Las Vegas. The information presented reflects your individual responses and your team\u2019s aggregated data from the Teamwork Competency Test and post-session satisfaction survey. Scores represent self-reported behavioral tendencies and are not evaluative assessments of job performance or professional capability.';
 
@@ -164,6 +199,7 @@ const ParticipantFeedbackGenerator = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [batchPrintMode, setBatchPrintMode] = useState(false);
   const [usingSampleData, setUsingSampleData] = useState(false);
+  const [satisfactionMax, setSatisfactionMax] = useState(5);
   const batchPrintRef = useRef(false);
 
   // Trigger print once batch cards are rendered
@@ -198,23 +234,88 @@ const ParticipantFeedbackGenerator = () => {
     }
   };
 
+  /**
+   * Convert a raw-item CSV row into a Participant by scoring text responses,
+   * applying reverse scoring, and averaging items into subscales.
+   */
+  const convertRawRow = (
+    headers: string[],
+    values: string[],
+    idx: number,
+  ): Participant => {
+    // Build a map of header → raw value
+    const raw: Record<string, string> = {};
+    headers.forEach((h, i) => { raw[h] = (values[i] ?? '').trim(); });
+
+    // Score every survey item
+    const scored: Record<string, number> = {};
+    for (const items of Object.values(SUBSCALE_ITEMS)) {
+      for (const item of items) {
+        const val = raw[item];
+        if (val === undefined || val === '') continue;
+        let score = textToScore(val);
+        if (score === null) {
+          // Try parsing as a number (in case some responses are already numeric)
+          const n = parseFloat(val);
+          score = isNaN(n) ? null : n;
+        }
+        if (score !== null) {
+          scored[item] = REVERSE_SCORED_ITEMS.has(item) ? 5 - score : score;
+        }
+      }
+    }
+
+    // Average items within each subscale
+    const subscales: Record<string, number> = {};
+    for (const [subscale, items] of Object.entries(SUBSCALE_ITEMS)) {
+      const scores = items.map(i => scored[i]).filter((v): v is number => v !== undefined);
+      subscales[subscale] = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
+    }
+
+    return {
+      id: idx,
+      name: raw['Email_1'] || `Participant ${idx + 1}`,
+      team: raw['Team'] || 'Unassigned',
+      conflict_resolution: subscales.conflict_resolution,
+      collaborative_problem_solving: subscales.collaborative_problem_solving,
+      communication: subscales.communication,
+      goal_setting: subscales.goal_setting,
+      planning_coordination: subscales.planning_coordination,
+      satisfaction: subscales.satisfaction,
+    };
+  };
+
   const parseCSV = (text: string) => {
     const lines = text.split('\n');
-    const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/\s+/g, '_'));
+    const rawHeaders = lines[0].split(',').map(h => h.trim());
+    const isRawFormat = rawHeaders.some(h => h === 'Email_1');
 
-    const parsedData: Participant[] = lines.slice(1)
-      .filter(line => line.trim())
-      .map((line, idx) => {
-        const values = line.split(',').map(v => v.trim());
-        const obj: Record<string, string | number> = { id: idx };
-        headers.forEach((header, index) => {
-          obj[header] = isNaN(Number(values[index])) ? values[index] : parseFloat(values[index]);
+    if (isRawFormat) {
+      const parsedData: Participant[] = lines.slice(1)
+        .filter(line => line.trim())
+        .map((line, idx) => convertRawRow(rawHeaders, line.split(','), idx));
+
+      setSatisfactionMax(4);
+      setData(parsedData);
+      calculateTeamStats(parsedData);
+    } else {
+      // Legacy format: pre-computed means
+      const headers = rawHeaders.map(h => h.toLowerCase().replace(/\s+/g, '_'));
+      const parsedData: Participant[] = lines.slice(1)
+        .filter(line => line.trim())
+        .map((line, idx) => {
+          const values = line.split(',').map(v => v.trim());
+          const obj: Record<string, string | number> = { id: idx };
+          headers.forEach((header, index) => {
+            obj[header] = isNaN(Number(values[index])) ? values[index] : parseFloat(values[index]);
+          });
+          return obj as unknown as Participant;
         });
-        return obj as unknown as Participant;
-      });
 
-    setData(parsedData);
-    calculateTeamStats(parsedData);
+      setSatisfactionMax(5);
+      setData(parsedData);
+      calculateTeamStats(parsedData);
+    }
   };
 
   const calculateTeamStats = (participants: Participant[]) => {
@@ -282,6 +383,7 @@ const ParticipantFeedbackGenerator = () => {
   const loadSampleData = () => {
     setData(SAMPLE_DATA);
     calculateTeamStats(SAMPLE_DATA);
+    setSatisfactionMax(5);
     setUsingSampleData(true);
   };
 
@@ -291,6 +393,7 @@ const ParticipantFeedbackGenerator = () => {
     setTeamStats({});
     setBatchPrintMode(false);
     setUsingSampleData(false);
+    setSatisfactionMax(5);
   };
 
   // -----------------------------------------------------------------------
@@ -446,13 +549,13 @@ const ParticipantFeedbackGenerator = () => {
             </div>
             <div className="text-right">
               <span className="text-3xl font-bold text-rose-500">{satisfaction.toFixed(1)}</span>
-              <span className="text-gray-300 text-base"> / 5</span>
+              <span className="text-gray-300 text-base"> / {satisfactionMax}</span>
             </div>
           </div>
           <div className="mt-3 bg-gray-100 rounded-full h-2 overflow-hidden">
             <div
               className="bg-gradient-to-r from-rose-400 to-rose-500 h-full rounded-full"
-              style={{ width: `${(satisfaction / 5) * 100}%` }}
+              style={{ width: `${(satisfaction / satisfactionMax) * 100}%` }}
             />
           </div>
         </div>
@@ -654,11 +757,18 @@ const ParticipantFeedbackGenerator = () => {
             </div>
 
             <div className="p-6 bg-gray-50 rounded-lg text-left max-w-lg mx-auto">
-              <p className="font-semibold mb-3 text-gray-700">Expected CSV columns:</p>
+              <p className="font-semibold mb-3 text-gray-700">Expected CSV format:</p>
+              <p className="text-xs text-gray-600 mb-2">
+                Raw survey items with text responses (Completely disagree / Disagree / Agree / Completely agree).
+                Items are automatically scored, reverse-coded, and averaged into subscales.
+              </p>
               <code className="text-xs text-gray-600 block whitespace-pre-wrap break-all leading-relaxed">
-name,team,conflict_resolution,collaborative_problem_solving,communication,goal_setting,planning_coordination,satisfaction{'\n'}
-Alice,Team A,3.2,2.8,3.5,3.1,2.9,4.5{'\n'}
-Bob,Team A,2.9,3.1,3.0,3.4,3.2,3.8</code>
+Email_1,Team,CR1,CR16,...,Satisfaction_1,...,Satisfaction_5,...{'\n'}
+user@example.com,Team A,Agree,Completely agree,...{'\n'}
+</code>
+              <p className="text-xs text-gray-400 mt-2">
+                Also accepts pre-computed means: name,team,conflict_resolution,...,satisfaction
+              </p>
             </div>
           </div>
         ) : (

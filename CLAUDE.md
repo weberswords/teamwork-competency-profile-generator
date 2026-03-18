@@ -128,6 +128,23 @@ Sample data uses obviously fictitious names (e.g., "John Q. Sample", "Fakename M
 
 ## Data Input Format (CSV)
 
+The app auto-detects which CSV format is uploaded.
+
+### Primary format: Raw survey items
+
+```
+Email_1,Team,CR1,CR16,CR19,CR21,CR7,CR10,CR15,CR18,CPS3,CPS11,CPS25,CPS14,CPS24,CPS26,COM5,COM17,COM28,COM29,COM2,COM27,COM8,COM9,COM12,COM30,GSPM35,GSPM6,GSPM22,GSPM31,GSPM20,GSPM32,GSPM36,PTC4,PTC23,PTC33,PTC34,PTC13,Satisfaction_1,Satisfaction_2,Satisfaction_3,Satisfaction_4,Satisfaction_5,Gender,Gender_4_TEXT,Age,Ethnicity2,Education,Skills,SkillsCombo,Tenure,CompanyMethodology,CompanyMethodology_6_TEXT,HybridMethodology,HybridMethodology_4_TEXT,Role,Role_7_TEXT,CompanySize,Industry,Industry_11_TEXT
+```
+
+- **Name**: `Email_1` is used as the participant identifier.
+- **Text → numeric**: "Completely disagree"/"Strongly disagree" = 1, "Disagree" = 2, "Agree" = 3, "Completely agree"/"Strongly agree" = 4 (case-insensitive, trimmed).
+- **Reverse scoring** (5 − raw): CPS11, CPS25, CPS26, Satisfaction_3.
+- **Subscale averaging**: Items are grouped and averaged into conflict_resolution (8 items), collaborative_problem_solving (6), communication (10), goal_setting (7), planning_coordination (5), satisfaction (5).
+- **Satisfaction scale**: 1–4 when derived from text responses.
+- Demographic columns (Gender, Age, Ethnicity2, Education, Skills, etc.) are ignored — never displayed on profiles.
+
+### Legacy format: Pre-computed means
+
 ```
 name,team,conflict_resolution,collaborative_problem_solving,communication,goal_setting,planning_coordination,satisfaction
 ```
