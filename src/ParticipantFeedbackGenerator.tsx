@@ -462,9 +462,12 @@ const ParticipantFeedbackGenerator = () => {
               </span>
             )}
           </div>
+          <p className="text-xs text-gray-400 mt-1">
+            {td.isHighAgreement
+              ? 'Most team members scored within a similar range on overall teamwork competency.'
+              : 'Team members showed a wider spread of scores across teamwork competency.'}
+          </p>
         </div>
-
-        {/* Divider */}
         <div className="border-t border-gray-100 mx-8 mt-4" />
 
         {/* Radar Chart */}
@@ -617,7 +620,7 @@ const ParticipantFeedbackGenerator = () => {
   // Settings Panel
   // -----------------------------------------------------------------------
 
-  const SettingsPanel = () => (
+  const settingsPanel = (
     <div className="bg-white rounded-2xl shadow-xl p-6 mb-8 print-hide">
       <button
         onClick={() => setShowSettings(!showSettings)}
@@ -774,7 +777,7 @@ user@example.com,Team A,Agree,Completely agree,...{'\n'}
         ) : (
           <>
             {/* ---- Settings ---- */}
-            <SettingsPanel />
+            {settingsPanel}
 
             {/* ---- Sample Data Notice ---- */}
             {usingSampleData && (
