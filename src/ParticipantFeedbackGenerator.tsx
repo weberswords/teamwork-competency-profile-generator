@@ -617,7 +617,7 @@ const ParticipantFeedbackGenerator = () => {
   // Settings Panel
   // -----------------------------------------------------------------------
 
-  const SettingsPanel = () => (
+  const settingsPanel = (
     <div className="bg-white rounded-2xl shadow-xl p-6 mb-8 print-hide">
       <button
         onClick={() => setShowSettings(!showSettings)}
@@ -774,7 +774,7 @@ user@example.com,Team A,Agree,Completely agree,...{'\n'}
         ) : (
           <>
             {/* ---- Settings ---- */}
-            <SettingsPanel />
+            {settingsPanel}
 
             {/* ---- Sample Data Notice ---- */}
             {usingSampleData && (
