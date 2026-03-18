@@ -462,9 +462,12 @@ const ParticipantFeedbackGenerator = () => {
               </span>
             )}
           </div>
+          <p className="text-xs text-gray-400 mt-1">
+            {td.isHighAgreement
+              ? 'Most team members scored within a similar range on overall teamwork competency.'
+              : 'Team members showed a wider spread of scores across teamwork competency.'}
+          </p>
         </div>
-
-        {/* Divider */}
         <div className="border-t border-gray-100 mx-8 mt-4" />
 
         {/* Radar Chart */}
