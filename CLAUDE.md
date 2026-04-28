@@ -137,10 +137,10 @@ Email_1,Team,CR1,CR16,CR19,CR21,CR7,CR10,CR15,CR18,CPS3,CPS11,CPS25,CPS14,CPS24,
 ```
 
 - **Name**: `Email_1` is used as the participant identifier.
-- **Text → numeric**: "Completely disagree"/"Strongly disagree" = 1, "Disagree" = 2, "Agree" = 3, "Completely agree"/"Strongly agree" = 4 (case-insensitive, trimmed).
-- **Reverse scoring** (5 − raw): CPS11, CPS25, CPS26, Satisfaction_3.
+- **TWCT text → numeric (4-point)**: "Completely disagree"/"Strongly disagree" = 1, "Disagree" = 2, "Agree" = 3, "Completely agree"/"Strongly agree" = 4 (case-insensitive, trimmed).
+- **Satisfaction text → numeric (5-point)**: "Strongly disagree" = 1, "Somewhat disagree" = 2, "Neither agree nor disagree" = 3, "Somewhat agree" = 4, "Strongly agree" = 5. Numeric values 1–5 in the CSV are also accepted.
+- **Reverse scoring**: applied on each item's own scale — `5 − raw` for the 4-point TWCT items (CPS11, CPS25, CPS26) and `6 − raw` for the 5-point satisfaction item (Satisfaction_3).
 - **Subscale averaging**: Items are grouped and averaged into conflict_resolution (8 items), collaborative_problem_solving (6), communication (10), goal_setting (7), planning_coordination (5), satisfaction (5).
-- **Satisfaction scale**: 1–4 when derived from text responses.
 - Demographic columns (Gender, Age, Ethnicity2, Education, Skills, etc.) are ignored — never displayed on profiles.
 
 ### Legacy format: Pre-computed means

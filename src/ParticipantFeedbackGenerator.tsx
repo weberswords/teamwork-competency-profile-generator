@@ -117,12 +117,40 @@ const SUBSCALE_ITEMS: Record<string, string[]> = {
   satisfaction: ['Satisfaction_1', 'Satisfaction_2', 'Satisfaction_3', 'Satisfaction_4', 'Satisfaction_5'],
 };
 
-/** Items that require reverse scoring (5 - raw) */
+/** Items that require reverse scoring */
 const REVERSE_SCORED_ITEMS = new Set(['CPS11', 'CPS25', 'CPS26', 'Satisfaction_3']);
 
-/** Map text responses to numeric scores (case-insensitive, trimmed) */
-function textToScore(text: string): number | null {
+/** Subscales scored on a 5-point Likert scale (others use the 4-point TWCT scale) */
+const FIVE_POINT_SUBSCALES = new Set(['satisfaction']);
+
+/**
+ * Map text responses to numeric scores (case-insensitive, trimmed).
+ * The TWCT uses a 4-point scale; satisfaction uses a 5-point scale with a
+ * neutral midpoint, so callers must specify which scale to apply.
+ */
+function textToScore(text: string, scale: 4 | 5): number | null {
   const t = text.trim().toLowerCase();
+  if (scale === 5) {
+    switch (t) {
+      case 'strongly disagree':
+      case 'completely disagree':
+        return 1;
+      case 'somewhat disagree':
+      case 'disagree':
+        return 2;
+      case 'neither agree nor disagree':
+      case 'neutral':
+        return 3;
+      case 'somewhat agree':
+      case 'agree':
+        return 4;
+      case 'strongly agree':
+      case 'completely agree':
+        return 5;
+      default:
+        return null;
+    }
+  }
   switch (t) {
     case 'completely disagree':
     case 'strongly disagree':
@@ -249,18 +277,20 @@ const ParticipantFeedbackGenerator = () => {
 
     // Score every survey item
     const scored: Record<string, number> = {};
-    for (const items of Object.values(SUBSCALE_ITEMS)) {
+    for (const [subscale, items] of Object.entries(SUBSCALE_ITEMS)) {
+      const scale: 4 | 5 = FIVE_POINT_SUBSCALES.has(subscale) ? 5 : 4;
       for (const item of items) {
         const val = raw[item];
         if (val === undefined || val === '') continue;
-        let score = textToScore(val);
+        let score = textToScore(val, scale);
         if (score === null) {
           // Try parsing as a number (in case some responses are already numeric)
           const n = parseFloat(val);
           score = isNaN(n) ? null : n;
         }
         if (score !== null) {
-          scored[item] = REVERSE_SCORED_ITEMS.has(item) ? 5 - score : score;
+          // Reverse on the item's own scale: 5 - x for 4-pt, 6 - x for 5-pt
+          scored[item] = REVERSE_SCORED_ITEMS.has(item) ? (scale + 1) - score : score;
         }
       }
     }
@@ -295,7 +325,7 @@ const ParticipantFeedbackGenerator = () => {
         .filter(line => line.trim())
         .map((line, idx) => convertRawRow(rawHeaders, line.split(','), idx));
 
-      setSatisfactionMax(4);
+      setSatisfactionMax(5);
       setData(parsedData);
       calculateTeamStats(parsedData);
     } else {
@@ -762,7 +792,9 @@ const ParticipantFeedbackGenerator = () => {
             <div className="p-6 bg-gray-50 rounded-lg text-left max-w-lg mx-auto">
               <p className="font-semibold mb-3 text-gray-700">Expected CSV format:</p>
               <p className="text-xs text-gray-600 mb-2">
-                Raw survey items with text responses (Completely disagree / Disagree / Agree / Completely agree).
+                Raw survey items as numeric values or text responses. TWCT items
+                use a 4-point scale (Completely disagree / Disagree / Agree / Completely agree);
+                Satisfaction items use a 5-point scale with a neutral midpoint.
                 Items are automatically scored, reverse-coded, and averaged into subscales.
               </p>
               <code className="text-xs text-gray-600 block whitespace-pre-wrap break-all leading-relaxed">
